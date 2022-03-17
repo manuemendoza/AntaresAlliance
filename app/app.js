@@ -8,6 +8,7 @@ connectDataBase();
 require('./services/passport/local-auth');
 
 const userRouter = require('./modules/user/router');
+const logsRouter = require('./modules/log/router');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(function(err, req, res, next) {
 });
 
 app.use('/users', userRouter);
+app.use('/logs', logsRouter);
 
 // a little easter egg :P
 app.get('/coffee', (req, res) => res.send('So sorry', 418));

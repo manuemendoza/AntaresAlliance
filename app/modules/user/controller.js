@@ -1,6 +1,11 @@
-const User = require('./model');
+
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+
+const User = require('./model');
+const Log = require('../log/model');
+
+const { getJournal } = require('../../services/journal');
 
 const createUser = async (req, res) => {
     if (req.user.role == 'admin') {
@@ -62,7 +67,6 @@ const loginUser = async (req, res) => {
 
 
 const getUsers = async(req, res) => {
-
     const filters = {};
     
     if (req.user.role == 'user'){
@@ -76,13 +80,38 @@ const getUsers = async(req, res) => {
     }
 
     try {
-        const users = await User.find(filters).select({
+        let users = await User.find(filters).select({
             _id: 1,
             name: 1,
             surname: 1,
             email: 1,
             role: 1
         });
+
+        let today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        for (let i in users) { 
+            const logs = await Log.find(
+                {
+                    userId: users[i]._id,
+                    createdAt: { $gt: today}
+                },
+                null,
+                { sort: { createdAt: 1 }}
+            );
+
+            users[i] = JSON.parse(JSON.stringify(users[i]));
+
+            if (logs.length > 0) {
+                users[i].logs = Object.values(getJournal(logs))[0];
+            } else { 
+                users[i].logs = {
+                    hours: 0,
+                    logs: []
+                };
+            }
+        }
         res.status(200).json(users);
     } catch (error) {
         console.error(error);

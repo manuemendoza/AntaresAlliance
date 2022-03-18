@@ -27,8 +27,8 @@ app.use(function(err, req, res, next) {
     res.json({ error: err });
 });
 
+app.use('/', logsRouter);
 app.use('/users', userRouter);
-app.use('/logs', logsRouter);
 
 // a little easter egg :P
 app.get('/coffee', (req, res) => res.send('So sorry', 418));
